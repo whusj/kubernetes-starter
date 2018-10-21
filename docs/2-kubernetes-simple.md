@@ -51,9 +51,9 @@ $ journalctl -f -u kube-apiserver
 > \#kubernetes集群的虚拟ip的地址范围  
 > --service-cluster-ip-range=10.68.0.0/16 \\  
 > \#service的nodeport的端口范围限制  
->   --service-node-port-range=20000-40000 \\  
+>   --service-node-port-range=80-40000 \\  
 > \#很多地方都需要和etcd打交道，也是唯一可以直接操作etcd的模块  
->   --etcd-servers=http://192.168.1.102:2379 \\  
+>   --etcd-servers=http://192.168.202.61:2379 \\  
 > ...  
 
 ## 3. 部署ControllerManager（主节点）
@@ -150,7 +150,7 @@ No IPv6 peers found.
 **查看端口BGP 协议是通过TCP 连接来建立邻居的，因此可以用netstat 命令验证 BGP Peer**
 ```bash
 $ netstat -natp|grep ESTABLISHED|grep 179
-tcp        0      0 192.168.1.102:60959     192.168.1.103:179       ESTABLISHED 29680/bird
+tcp        0      0 192.168.202.61:60959     192.168.1.103:179       ESTABLISHED 29680/bird
 ```
 **查看集群ippool情况**
 ```bash
@@ -170,7 +170,7 @@ $ calicoctl get ipPool -o yaml
 > \#以docker方式运行  
 > ExecStart=/usr/bin/docker run --net=host --privileged --name=calico-node \\  
 > \#指定etcd endpoints（这里主要负责网络元数据一致性，确保Calico网络状态的准确性）  
->   -e ETCD_ENDPOINTS=http://192.168.1.102:2379 \\  
+>   -e ETCD_ENDPOINTS=http://192.168.202.61:2379 \\  
 > \#网络地址范围（同上面ControllerManager）  
 >   -e CALICO_IPV4POOL_CIDR=172.20.0.0/16 \\  
 > \#镜像名，为了加快大家的下载速度，镜像都放到了阿里云上  
@@ -189,7 +189,7 @@ kubectl提供了大量的子命令，方便管理Kubernetes集群中的各种功
 我们这没有安全相关的东西，只需要设置好api-server和上下文就好啦：
 ```bash
 #指定apiserver地址（ip替换为你自己的api-server地址）
-kubectl config set-cluster kubernetes  --server=http://192.168.1.102:8080
+kubectl config set-cluster kubernetes  --server=http://192.168.202.61:8080
 #指定设置上下文，指定cluster
 kubectl config set-context kubernetes --cluster=kubernetes
 #选择默认的上下文
@@ -249,7 +249,7 @@ kubelet依赖的一个配置，格式看也是我们后面经常遇到的yaml格
 > \#跳过tls，即是kubernetes的认证  
 >     insecure-skip-tls-verify: true  
 >   \#api-server地址  
->     server: http://192.168.1.102:8080  
+>     server: http://192.168.202.61:8080  
 > ...  
 
 **10-calico.conf**  
@@ -260,14 +260,14 @@ calico作为kubernets的CNI插件的配置
   "cniVersion": "0.1.0",  
   "type": "calico",  
     <!--etcd的url-->
-    "ed_endpoints": "http://192.168.1.102:2379",  
+    "ed_endpoints": "http://192.168.202.61:2379",  
     "logevel": "info",  
     "ipam": {  
         "type": "calico-ipam"  
    },  
     "kubernetes": {  
         <!--api-server的url-->
-        "k8s_api_root": "http://192.168.1.102:8080"  
+        "k8s_api_root": "http://192.168.202.61:8080"  
     }  
 }  
 ```

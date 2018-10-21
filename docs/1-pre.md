@@ -4,9 +4,9 @@
 
 | 系统类型 | IP地址 | 节点角色 | CPU | Memory | Hostname |
 | :------: | :--------: | :-------: | :-----: | :---------: | :-----: |
-| ubuntu16.04 | 192.168.1.101 | worker |   1    | 2G | server01 |
-| ubuntu16.04 | 192.168.1.102 | master |   1    | 2G | server02 |
-| ubuntu16.04 | 192.168.1.103 | worker |   1    | 2G | server03 |
+| centos7.5.1804 | 192.168.201.61 | master |   1    | 2G | centos61 |
+| centos7.5.1804 | 192.168.201.62 | worker |   1    | 2G | centos62 |
+| centos7.5.1804 | 192.168.201.63 | worker |   1    | 2G | centos63 |
 
 > 使用centos的同学也可以参考此文档，需要注意替换系统命令即可
 
@@ -22,11 +22,11 @@ $ apt-get remove docker docker-engine docker.io
 $ add-apt-repository  "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 ```
 ```bash
-$ apt-get update
+$ yum update
 ```
 #### 2.3 安装apt的https支持包并添加gpg秘钥
 ```bash
-$ apt-get install \
+$ yum install \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -38,15 +38,15 @@ $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 
 - 安装最新的稳定版
 ```bash
-$ apt-get install -y docker-ce
+$ yum install -y docker-ce
 ```
 - 安装指定版本
 ```bash
 #获取版本列表
-$ apt-cache madison docker-ce
+$ yum madison docker-ce
  
 #指定版本安装(比如版本是17.09.1~ce-0~ubuntu)
-$ apt-get install -y docker-ce=17.09.1~ce-0~ubuntu
+$ yum install -y docker-ce=17.09.1~ce-0~ubuntu
 
 ```
 - 接受所有ip的数据包转发
@@ -90,9 +90,9 @@ $ sysctl -p /etc/sysctl.d/k8s.conf
 #配置host，使每个Node都可以通过名字解析到ip地址
 $ vi /etc/hosts
 #加入如下片段(ip地址和servername替换成自己的)
-192.168.1.101 server01
-192.168.1.102 server02
-192.168.1.103 server03
+192.168.201.61 centos61
+192.168.201.62 centos62
+192.168.201.63 centos63
 ```
 
 ## 4. 准备二进制文件（所有节点）
