@@ -15,11 +15,11 @@
 
 #### 2.1 卸载旧版本(如果有的话)
 ```bash
-$ apt-get remove docker docker-engine docker.io
+$ yum remove docker docker-engine docker.io
 ```
-#### 2.2 更新apt-get源
+#### 2.2 更新yum源
 ```bash
-$ add-apt-repository  "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+$ add-yum-repository  "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 ```
 ```bash
 $ yum update

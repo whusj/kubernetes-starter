@@ -455,7 +455,7 @@ $ cp ~/kubernetes-starter/target/worker-node/kube-proxy.service /lib/systemd/sys
 $ systemctl daemon-reload
 
 #安装依赖软件
-$ apt install conntrack
+$ yum install conntrack
 
 #启动服务
 $ service kube-proxy start
