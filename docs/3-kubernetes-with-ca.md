@@ -104,7 +104,7 @@ $ ls
 ca-config.json  ca.csr  ca-csr.json  ca-key.pem  ca.pem
 ```
 
-## 4. 改造etcd
+## 4. 改造etcd（主节点）
 
 #### 4.1 准备证书
 etcd节点需要提供给其他服务访问，就要验证其他服务的身份，所以需要一个标识自己监听服务的server证书，当有多个etcd节点的时候也需要client证书与etcd集群其他节点交互，当然也可以client和server使用同一个证书因为它们本质上没有区别。
@@ -138,14 +138,14 @@ $ systemctl daemon-reload
 $ service etcd start
 #验证etcd服务（endpoints自行替换）
 $ ETCDCTL_API=3 etcdctl \
-  --endpoints=https://192.168.1.102:2379  \
+  --endpoints=https://192.168.202.61:2379  \
   --cacert=/etc/kubernetes/ca/ca.pem \
   --cert=/etc/kubernetes/ca/etcd/etcd.pem \
   --key=/etc/kubernetes/ca/etcd/etcd-key.pem \
   endpoint health
 ```
 
-## 5. 改造api-server
+## 5. 改造api-server（主节点）
 #### 5.1 准备证书
 ```bash
 #api-server证书放在这，api-server是核心，文件夹叫kubernetes吧，如果想叫apiserver也可以，不过相关的地方都需要修改哦
@@ -188,7 +188,7 @@ $ service kube-apiserver start
 $ journalctl -f -u kube-apiserver
 ```
 
-## 6. 改造controller-manager
+## 6. 改造controller-manager（主节点）
 controller-manager一般与api-server在同一台机器上，所以可以使用非安全端口与api-server通讯，不需要生成证书和私钥。
 #### 6.1 改造controller-manager服务
 **查看diff**
@@ -206,7 +206,7 @@ $ service kube-controller-manager start
 $ journalctl -f -u kube-controller-manager
 ```
 
-## 7. 改造scheduler
+## 7. 改造scheduler（主节点）
 scheduler一般与apiserver在同一台机器上，所以可以使用非安全端口与apiserver通讯。不需要生成证书和私钥。
 #### 7.1 改造scheduler服务
 **查看diff**
@@ -221,7 +221,7 @@ $ service kube-scheduler start
 #检查日志
 $ journalctl -f -u kube-scheduler
 ```
-## 8. 改造kubectl
+## 8. 改造kubectl（主节点）
 
 #### 8.1 准备证书
 ```bash
@@ -247,7 +247,7 @@ admin.csr  admin-csr.json  admin-key.pem  admin.pem
 $ kubectl config set-cluster kubernetes \
         --certificate-authority=/etc/kubernetes/ca/ca.pem \
         --embed-certs=true \
-        --server=https://192.168.1.102:6443
+        --server=https://192.168.202.61:6443
 #设置客户端认证参数，指定admin证书和秘钥
 $ kubectl config set-credentials admin \
         --client-certificate=/etc/kubernetes/ca/admin/admin.pem \
@@ -274,7 +274,7 @@ etcd-0               Healthy   {"health": "true"}
 ```
 
 
-## 9. 改造calico-node
+## 9. 改造calico-node（所有节点）
 #### 9.1 准备证书
 后续可以看到calico证书用在四个地方：
 * calico/node 这个docker 容器运行时访问 etcd 使用证书
@@ -321,7 +321,7 @@ $ calicoctl node status
 ```
 
 
-## 10. 改造kubelet
+## 10. 改造kubelet（工作节点为主）
 我们这里让kubelet使用引导token的方式认证，所以认证方式跟之前的组件不同，它的证书不是手动生成，而是由工作节点TLS BootStrap 向api-server请求，由主节点的controller-manager 自动签发。
 #### 10.1 创建角色绑定（主节点）
 引导token的方式要求客户端向api-server发起请求时告诉他你的用户名和token，并且这个用户是具有一个特定的角色：system:node-bootstrapper，所以需要先将 bootstrap token 文件中的 kubelet-bootstrap 用户赋予这个特定角色，然后 kubelet 才有权限发起创建认证请求。
@@ -345,7 +345,7 @@ $ kubectl create clusterrolebinding kubelet-bootstrap \
 $ kubectl config set-cluster kubernetes \
         --certificate-authority=/etc/kubernetes/ca/ca.pem \
         --embed-certs=true \
-        --server=https://192.168.1.102:6443 \
+        --server=https://192.168.202.61:6443 \
         --kubeconfig=bootstrap.kubeconfig
 #设置客户端认证参数(注意替换token)
 $ kubectl config set-credentials kubelet-bootstrap \
@@ -393,7 +393,7 @@ $ kubectl get csr|grep 'Pending' | awk '{print $1}'| xargs kubectl certificate a
 $ journalctl -f -u kubelet
 ```
 
-## 11. 改造kube-proxy
+## 11. 改造kube-proxy（工作节点）
 #### 11.1 准备证书
 ```bash
 #proxy证书放在这
@@ -421,7 +421,7 @@ kube-proxy.csr  kube-proxy-csr.json  kube-proxy-key.pem  kube-proxy.pem
 $ kubectl config set-cluster kubernetes \
         --certificate-authority=/etc/kubernetes/ca/ca.pem \
         --embed-certs=true \
-        --server=https://192.168.1.102:6443 \
+        --server=https://192.168.202.61:6443 \
         --kubeconfig=kube-proxy.kubeconfig
 #置客户端认证参数
 $ kubectl config set-credentials kube-proxy \
@@ -463,7 +463,7 @@ $ service kube-proxy start
 $ journalctl -f -u kube-proxy
 ```
 
-## 12. 改造kube-dns
+## 12. 改造kube-dns（主节点）
 kube-dns有些特别，因为它本身是运行在kubernetes集群中，以kubernetes应用的形式运行。所以它的认证授权方式跟之前的组件都不一样。它需要用到service account认证和RBAC授权。  
 **service account认证：**  
 每个service account都会自动生成自己的secret，用于包含一个ca，token和secret，用于跟api-server认证  
