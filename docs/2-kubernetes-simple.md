@@ -31,7 +31,7 @@ kube-apiserver是Kubernetes最重要的核心组件之一，主要提供以下�
 #### 2.2 部署
 APIServer的部署方式也是通过系统服务。部署流程跟etcd完全一样，不再注释
 ```bash
-$ cp target/master-node/kube-apiserver.service /lib/systemd/system/
+$ cp ~/kubernetes-starter/target/master-node/kube-apiserver.service /lib/systemd/system/
 $ systemctl enable kube-apiserver.service
 $ service kube-apiserver start
 $ journalctl -f -u kube-apiserver
@@ -66,7 +66,7 @@ cloud-controller-manager在Kubernetes启用Cloud Provider的时候才需要，�
 #### 3.2 部署
 **通过系统服务方式部署**
 ```bash
-$ cp target/master-node/kube-controller-manager.service /lib/systemd/system/
+$ cp ~/kubernetes-starter/target/master-node/kube-controller-manager.service /lib/systemd/system/
 $ systemctl enable kube-controller-manager.service
 $ service kube-controller-manager start
 $ journalctl -f -u kube-controller-manager
@@ -97,7 +97,7 @@ kube-scheduler负责分配调度Pod到集群内的节点上，它监听kube-apis
 #### 4.2 部署
 **通过系统服务方式部署**
 ```bash
-$ cp target/master-node/kube-scheduler.service /lib/systemd/system/
+$ cp ~/kubernetes-starter/target/master-node/kube-scheduler.service /lib/systemd/system/
 $ systemctl enable kube-scheduler.service
 $ service kube-scheduler start
 $ journalctl -f -u kube-scheduler
@@ -122,7 +122,7 @@ Calico在每一个计算节点利用Linux Kernel实现了一个高效的vRouter�
 #### 5.2 部署
 **calico是通过系统服务+docker方式完成的**
 ```bash
-$ cp target/all-node/kube-calico.service /lib/systemd/system/
+$ cp ~/kubernetes-starter/target/all-node/kube-calico.service /lib/systemd/system/
 $ systemctl enable kube-calico.service
 $ service kube-calico start
 $ journalctl -f -u kube-calico
@@ -209,11 +209,11 @@ $ mkdir -p /etc/kubernetes
 $ mkdir -p /etc/cni/net.d
 
 #复制kubelet服务配置文件
-$ cp target/worker-node/kubelet.service /lib/systemd/system/
+$ cp ~/kubernetes-starter/target/worker-node/kubelet.service /lib/systemd/system/
 #复制kubelet依赖的配置文件
-$ cp target/worker-node/kubelet.kubeconfig /etc/kubernetes/
+$ cp ~/kubernetes-starter/target/worker-node/kubelet.kubeconfig /etc/kubernetes/
 #复制kubelet用到的cni插件配置文件
-$ cp target/worker-node/10-calico.conf /etc/cni/net.d/
+$ cp ~/kubernetes-starter/target/worker-node/10-calico.conf /etc/cni/net.d/
 
 $ systemctl enable kubelet.service
 $ service kubelet start
@@ -287,9 +287,9 @@ calico作为kubernets的CNI插件的配置
 #确保工作目录存在
 $ mkdir -p /var/lib/kube-proxy
 #复制kube-proxy服务配置文件
-$ cp target/worker-node/kube-proxy.service /lib/systemd/system/
+$ cp ~/kubernetes-starter/target/worker-node/kube-proxy.service /lib/systemd/system/
 #复制kube-proxy依赖的配置文件
-$ cp target/worker-node/kube-proxy.kubeconfig /etc/kubernetes/
+$ cp ~/kubernetes-starter/target/worker-node/kube-proxy.kubeconfig /etc/kubernetes/
 
 $ systemctl enable kube-proxy.service
 $ service kube-proxy start
